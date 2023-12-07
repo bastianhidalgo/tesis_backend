@@ -1,0 +1,96 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Visita {
+  id_visita    Int            @id @default(autoincrement())
+  rut          String         @db.VarChar(255)
+  nombre       String
+  apellido     String
+  telefono     String         @db.VarChar(15)
+  rol          Int            
+  fechaInicio  DateTime?
+  fechaTermino DateTime?
+  ingreso      Ingreso[]
+  eventos      VisitaEvento[]
+
+  @@unique([id_visita, rut], map: "id_visita")
+  @@index([rol], map: "Visita_rol_fkey")
+  rolObj Rol @relation(fields: [rol], references: [codigo_rol])
+}
+  model Curso {
+  id_curso    Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  alumnos      Alumno[] // Relación uno a muchos, un curso puede tener varios alumnos
+
+
+}
+
+model Alumno {
+  id_alumno    Int       @id @default(autoincrement())
+  rut          String    @db.VarChar(255)
+  nombre       String
+  apellido     String
+  apoderados   ApoderadoAlumno[]
+  cursoId      Int
+  curso        Curso     @relation(fields: [cursoId], references: [id_curso])
+}
+model ApoderadoAlumno{
+  apoderadoId Int
+  alumnoId    Int
+  apoderado   Apoderado @relation(fields: [apoderadoId], references: [id_apoderado])
+  alumno      Alumno @relation(fields: [alumnoId], references: [id_alumno])
+
+  @@unique([apoderadoId, alumnoId], map: "apoderadoId")
+}
+
+model Apoderado {
+  id_apoderado Int      @id @default(autoincrement())
+  rut          String   @db.VarChar(255)
+  nombre       String
+  apellido     String
+  telefono     String   @db.VarChar(15)
+  alumnos      ApoderadoAlumno[] // Ahora es una relación uno a muchos, un apoderado puede tener varios alumnos
+}
+
+model Evento {
+  codigo_evento Int            @id @default(autoincrement())
+  tema          String         @db.VarChar(255)
+  descripcion   String         @db.VarChar(255)
+  fecha         DateTime?
+  visitas       VisitaEvento[]
+}
+
+model Ingreso {
+  fechaIngreso DateTime
+  visitaId     Int
+  visita       Visita   @relation(fields: [visitaId], references: [id_visita])
+
+  @@id([fechaIngreso, visitaId])
+  @@index([visitaId], map: "Ingreso_visitaId_fkey")
+}
+
+model VisitaEvento {
+  id       Int    @id @default(autoincrement())
+  eventoId Int
+  visitaId Int
+  evento   Evento @relation(fields: [eventoId], references: [codigo_evento])
+  visita   Visita @relation(fields: [visitaId], references: [id_visita])
+
+  @@unique([eventoId, visitaId], map: "eventoId")
+  @@index([visitaId], map: "VisitaEvento_visitaId_fkey")
+}
+
+model Rol {
+  codigo_rol    Int       @id @default(autoincrement())
+  descripcion   String    @db.VarChar(255)
+
+  visitas       Visita[]
+}
