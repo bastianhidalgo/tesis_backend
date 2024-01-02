@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 const getApoderados= async(req,res)=>{
     try{
-        const apoderados =  await prisma.Apoderado.findMany() // select * from visitas
+        const apoderados =  await prisma.Apoderado.findMany() // select * from apoderados
 
         if(apoderados.length==0){
             return res.status(200).json({
@@ -140,7 +140,7 @@ const getApoderado= async(req,res)=>{
         const apoderado = await prisma.Apoderado.findUnique({
             where : {id_apoderado: Number(id)}
         })
-        if (!alumno) { 
+        if (!apoderado) {
             return res.status(400).json({
               mensaje: "No se pudo encontrar al apoderado",
             });
@@ -193,7 +193,25 @@ const updateApoderado = async(req,res)=>{
     }
 }
 
-
+const obtenerInfoAdicionalApoderados = async (req, res) => {
+    try {
+        const idsApoderados = req.params.idsApoderados.split(',').map(id => parseInt(id, 10));
+  
+      // Utiliza Prisma para buscar información adicional de los usuarios basándote en los IDs
+      const apoderados = await prisma.Apoderado.findMany({
+        where: {
+          id_apoderado: {
+            in: idsApoderados,
+          },
+        },
+      });
+  
+      res.json(apoderados);
+    } catch (error) {
+      console.error('Error al obtener información adicional de apoderados:', error);
+      res.status(500).send('Error interno del servidor');
+    }
+  };
 
 module.exports={
 getApoderados,
@@ -202,5 +220,5 @@ deleteApoderado,
 getApoderado,
 updateApoderado,
 compararRut,
-
+obtenerInfoAdicionalApoderados
 }

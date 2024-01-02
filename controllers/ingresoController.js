@@ -29,16 +29,14 @@ const getIngresos= async(req,res)=>{
 
 const createIngreso= async(req,res)=>{
     
-    const {fechaIngreso,visitaId} = req.body;
+    const {fechaIngreso,personaId} = req.body;
     try{
 
         const ingreso = await prisma.Ingreso.create({
             data:{
-                fechaIngreso,      visita: {
-                    connect: {
-                      id_visita: visitaId // Suponiendo que visitaId es el ID del objeto Visita relacionado
-                    }
-                  }
+                fechaIngreso, personaId // Suponiendo que visitaId es el ID del objeto Visita relacionado
+                    
+                  
             }
         })
         return res.status(200).json({
@@ -83,98 +81,120 @@ const compararRut= async(req,res)=>{
         return res.status(400).json({
             mensaje:"No se pudo encontrar a la visita"
     })
-
-
 }
 }
-const deleteIngreso= async(req,res)=>{
-    const {id} = req.params
-    try{
+const deleteIngreso = async (req, res) => {
+    const { fechaIngreso } = req.params;
+
+    try {
         const ingreso = await prisma.Ingreso.delete({
-            where : {id_ingreso: Number(id)}
-        })
-        if(!ingreso){
+            where: { fechaIngreso: new Date(fechaIngreso) }
+        });
+
+        if (!ingreso) {
             return res.status(400).json({
-                mensaje:"No se pudo encontrar a la visita"
-            })
+                mensaje: "No se pudo encontrar el ingreso"
+            });
         }
 
         return res.status(200).json({
-            mensaje:"Se ha eliminado la visita exitosamente",
-            ingreso:ingreso
-        })
-    }catch(error)
-    {
+            mensaje: "Se ha eliminado el ingreso exitosamente",
+            ingreso: ingreso
+        });
+    } catch (error) {
         console.log(error.stack);
         return res.status(400).json({
-            mensaje:"No se pudo encontrar a la visita"
-        })
-    }
-};
-
-const getIngreso= async(req,res)=>{
-    const {id} = req.params
-    try{
-
-        const ingreso = await prisma.Ingreso.findUnique({
-            where : {id_ingreso: Number(id)}
-        })
-        if (!ingreso) { 
-            return res.status(400).json({
-              mensaje: "No se pudo encontrar a el ingreso",
-            });
-          }
-        return res.status(200).json({
-            mensaje:"Se ha encontrado a el ingreso",
-            ingreso:ingreso
-        })
-    }catch(error)
-    {
-        console.log(error.stack);
-        return res.status(400).json({
-            mensaje:"Error al encontrar el ingreso"
-        })
-    }
-};
-
-const updateIngreso = async(req,res)=>{
-    const {id}=req.params
-    const {fechaIngreso,rut,nombre,apellido,telefono,rol,fechaInicio,fechaTermino} = req.body
-    try{
-
-    const ingreso =await prisma.Ingreso.update({
-       
-    where:{id_ingreso: Number(id)},
-    data:{
-        fechaIngreso:fechaIngreso,
-        rut:rut,
-        nombre:nombre,
-        apellido:apellido,
-        telefono:telefono,
-        rol:rol,
-        fechaInicio:fechaInicio,
-        fechaTermino:fechaTermino
-    }
-    }) 
-       if(!ingreso){
-        return res.status(400).json({
-            mensaje:"Error al actualizar"
+            mensaje: "No se pudo encontrar el ingreso"
         });
     }
-    return res.status(200).json({
-        mensaje:"Se ha actualizado a la visita",
-        ingreso:ingreso
-    })
+};
+const getIngreso = async (req, res) => {
+    const { fechaIngreso } = req.params;
+    try {
+        const ingreso = await prisma.Ingreso.findUnique({
+            where: { fechaIngreso: new Date(fechaIngreso) }
+        });
 
+        if (!ingreso) {
+            return res.status(400).json({
+                mensaje: "No se pudo encontrar el ingreso",
+            });
+        }
 
-    }catch(error)
-    {
+        return res.status(200).json({
+            mensaje: "Se ha encontrado el ingreso",
+            ingreso: ingreso
+        });
+    } catch (error) {
         console.log(error.stack);
         return res.status(400).json({
-            mensaje:"Error al actualizar a la visita"
-        })
+            mensaje: "Error al encontrar el ingreso"
+        });
     }
-}
+};
+const getIngresosPorPersona = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Busca la persona por el ID y obtén todos los ingresos asociados
+        const ingresos = await prisma.Ingreso.findMany({
+            where: { personaId: parseInt(id) },
+        });
+
+        return res.status(200).json({
+            mensaje: "Se han encontrado los ingresos de la persona",
+            ingresos: ingresos
+        });
+    } catch (error) {
+        console.log(error.stack);
+        return res.status(400).json({
+            mensaje: "Error al encontrar los ingresos de la persona"
+        });
+    }
+};
+
+const getIngresosByDateRange = async (req, res) => {
+    const { fechaInicio, fechaTermino } = req.params;
+    try {
+        const startDate = new Date(fechaInicio);
+    
+        let ingresos;
+        if (fechaTermino) {
+          // Si fechaTermino está presente, busca eventos en el rango entre startDate y endDate
+          const endDate = new Date(fechaTermino);
+          ingresos = await prisma.Ingreso.findMany({
+            where: {
+              fechaIngreso: {
+                gte: startDate,
+                lte: new Date(endDate.getTime() + 24 * 60 * 60 * 1000),
+              },
+            },
+          });
+        } else {
+          // Si fechaTermino no está presente, busca eventos solo en el día de startDate
+          ingresos = await prisma.Ingreso.findMany({
+            where: {
+              fechaIngreso: {
+                gte: startDate,
+                lt: new Date(startDate.getTime() + 24 * 60 * 60 * 1000), // Agrega un día a startDate
+              },
+            },
+          });
+        }
+        if(ingresos.length==0){
+            return res.status(200).json({
+                mensaje:"No hay registros de ingresos",fechaInicio:fechaInicio,fechaTermino:fechaTermino,
+            })
+        }
+      return res.status(200).json({
+        mensaje: "Se han encontrado ingresos entre las fechas dadas",
+        ingresos: ingresos,fechaInicio:fechaInicio,fechaTermino:fechaTermino,
+      });
+    } catch (error) {
+      console.error('Error al obtener ingesos por rango de fechas:', error);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  };
+
 
 
 module.exports={
@@ -182,6 +202,7 @@ getIngresos,
 createIngreso,
 deleteIngreso,
 getIngreso,
-updateIngreso,
-compararRut
+compararRut,
+getIngresosPorPersona,
+getIngresosByDateRange
 }

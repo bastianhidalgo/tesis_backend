@@ -7,11 +7,12 @@ const api=express.Router();
 
 api.get('/ingresos/getall',ingresoController.getIngresos);
 api.get('/ingresos/getone/:id',ingresoController.getIngreso);
-api.get('/ingresos/comparar/:rut',ingresoController.compararRut);
+api.get('/ingresos/getingresosbypersona/:id',ingresoController.getIngresosPorPersona);
+api.get('/ingresos/getallbydate/:fechaInicio/:fechaTermino?',ingresoController.getIngresosByDateRange);
+
 
 api.post('/ingresos/create',ingresoController.createIngreso);
 api.delete('/ingresos/delete/:id',ingresoController.deleteIngreso);
-api.put('/ingresos/update/:id',ingresoController.updateIngreso);
 
 
 module.exports=api;

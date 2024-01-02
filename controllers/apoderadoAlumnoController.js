@@ -82,7 +82,7 @@ const getApoderadoAlumno= async(req,res)=>{
             });
           }
         return res.status(200).json({
-            mensaje:"Se ha encontrado a el ingreso",
+            mensaje:"Se ha encontrado coincidencia",
             ApoderadoAlumno:ApoderadoAlumno
         })
     }catch(error)
@@ -113,6 +113,26 @@ const getAlumnosporApoderado= async(req,res)=>{
           res.status(500).json({ error: 'Error al obtener los IDs de alumnos por apoderado' });
         }
       };
+      const getApoderadosporAlumno= async(req,res)=>{
+    
+        try{
+            const {alumnoId} = req.params
+            const ApoderadoAlumno = await prisma.ApoderadoAlumno.findMany({
+                where: {
+                    alumnoId: parseInt(alumnoId),
+                  },
+                  select: {
+                    apoderadoId: true,
+                  },
+              });
+    
+              const idsApoderadosArray = ApoderadoAlumno.map((apoderado) => apoderado.apoderadoId);
+              res.status(200).json({ idsApoderados: idsApoderadosArray });
+            } catch (error) {
+              console.error(error);
+              res.status(500).json({ error: 'Error al obtener los IDs de alumnos por apoderado' });
+            }
+          };
 
 const deleteApoderadoAlumno= async(req,res)=>{
     const {id_apoderado,id_alumno} = req.params
@@ -153,5 +173,6 @@ getApoderadosAlumnos,
 createApoderadoAlumno,
 getApoderadoAlumno,
 deleteApoderadoAlumno,
-getAlumnosporApoderado
+getAlumnosporApoderado,
+getApoderadosporAlumno
 }

@@ -2,11 +2,11 @@ const { useRegexNombre,useRegexTelefono, useRegexRut } = require('../utils/util'
 const Rut=require('rut.js')
 const {PrismaClient} = require("@prisma/client");
 const prisma = new PrismaClient();
-const eventosController= require ('../controllers/eventoController');
+const eventosController= require ('./eventoController');
 
-const getVisitaEventos= async(req,res)=>{
+const getPersonasEventos= async(req,res)=>{
     try{
-        const visitaEvento =  await prisma.VisitaEvento.findMany() // select * from ingreso
+        const PersonaEvento =  await prisma.PersonaEvento.findMany() // select * from ingreso
 
         if(visitaEvento.length==0){
             return res.status(200).json({
@@ -15,7 +15,7 @@ const getVisitaEventos= async(req,res)=>{
         }
         return res.status(200).json({
             mensaje:"Se han encontrado resultados",
-            visitaEvento:visitaEvento,
+            PersonaEvento:PersonaEvento,
         })
 
     }catch(error){
@@ -28,31 +28,29 @@ const getVisitaEventos= async(req,res)=>{
 
 }
 
-const createVisitaEvento= async(req,res)=>{
+const createPersonaEvento= async(req,res)=>{
     
 
-    const {eventoId,visitaId} = req.body;
-
-
+    const {eventoId,personaId} = req.body;
     try{
         
 
-        const VisitaEvento = await prisma.VisitaEvento.create({
+        const PersonaEvento = await prisma.PersonaEvento.create({
             data:{
                 evento:{
                     connect: {
                         codigo_evento: eventoId
                     }
-                },      visita: {
+                },      persona: {
                     connect: {
-                      id_visita: visitaId // Suponiendo que visitaId es el ID del objeto Visita relacionado
+                      id_persona: personaId // Suponiendo que visitaId es el ID del objeto Visita relacionado
                     }
                   }
             }
         })
         return res.status(200).json({
-            mensaje:"Se ha creado la visita correctamente",
-            VisitaEvento:VisitaEvento
+            mensaje:"Se ha creado el ingreso al evento correctamente",
+            PersonaEvento:PersonaEvento
 
         })
 
@@ -92,30 +90,30 @@ const compararRut= async(req,res)=>{
         return res.status(400).json({
             mensaje:"No se pudo encontrar a la visita"
     })
-
-
 }
 }
-const getVisitaEvento= async(req,res)=>{
-    const {codigo_evento,id_visita} = req.params
+
+
+const getPersonaEvento= async(req,res)=>{
+    const {codigo_evento,id_persona} = req.params
     try{
 
-        const visitaEvento = await prisma.VisitaEvento.findUnique({
+        const PersonaEvento = await prisma.PersonaEvento.findUnique({
             where: {
-              eventoId_visitaId: {
+              eventoId_personaId: {
                 eventoId: Number(codigo_evento),
-                visitaId: Number(id_visita),
+                personaId: Number(id_persona),
               },
             },
           });
-        if (!visitaEvento) {
+        if (!PersonaEvento) {
             return res.status(400).json({
               mensaje: "No se pudo encontrar a el ingreso",
             });
           }
         return res.status(200).json({
             mensaje:"Se ha encontrado a el ingreso",
-            visitaEvento:visitaEvento
+            PersonaEvento:PersonaEvento
         })
     }catch(error)
     {
@@ -125,54 +123,54 @@ const getVisitaEvento= async(req,res)=>{
         })
     }
 };
-const getVisitasPorEvento= async(req,res)=>{
+const getPersonasPorEvento= async(req,res)=>{
     
     try{
         const {eventoId} = req.params
-        const visitasEvento = await prisma.VisitaEvento.findMany({
+        const PersonaEvento = await prisma.PersonaEvento.findMany({
             where: {
                 eventoId: parseInt(eventoId),
               },
               select: {
-                visitaId: true,
+                personaId: true,
               },
           });
 
-          const idsVisitasArray = visitasEvento.map((visita) => visita.visitaId);
-          res.status(200).json({ idsVisitas: idsVisitasArray });
+          const idsPersonasArray = PersonaEvento.map((persona) => persona.personaId);
+          res.status(200).json({ idsPersonas: idsPersonasArray });
         } catch (error) {
           console.error(error);
           res.status(500).json({ error: 'Error al obtener los IDs de visitas por evento' });
         }
       };
 
-const deleteVisitaEvento= async(req,res)=>{
-    const {codigo_evento,id_visita} = req.params
+const deletePersonaEvento= async(req,res)=>{
+    const {codigo_evento,id_persona} = req.params
     try{
 
-        const visitaEvento = await prisma.VisitaEvento.delete({
+        const PersonaEvento = await prisma.PersonaEvento.delete({
             where: {
-              eventoId_visitaId: {
+              eventoId_personaId: {
                 eventoId: Number(codigo_evento),
-                visitaId: Number(id_visita),
+                personaId: Number(id_persona),
               },
             },
           });
-        if(!visitaEvento){
+        if(!PersonaEvento){
             return res.status(400).json({
-                mensaje:"No se pudo encontrar a la visita"
+                mensaje:"No se pudo encontrar a la persona"
             })
         }
 
         return res.status(200).json({
-            mensaje:"Se ha eliminado la visita exitosamente",
-            visitaEvento:visitaEvento
+            mensaje:"Se ha eliminado la persona exitosamente",
+            PersonaEvento:PersonaEvento
         })
     }catch(error)
     {
         console.log(error.stack);
         return res.status(400).json({
-            mensaje:"No se pudo encontrar a la visita"
+            mensaje:"No se pudo encontrar a la persona"
         })
     }
 };
@@ -181,10 +179,10 @@ const deleteVisitaEvento= async(req,res)=>{
 
 
 module.exports={
-getVisitaEventos,
-createVisitaEvento,
-getVisitaEvento,
-deleteVisitaEvento,
+getPersonasEventos,
+createPersonaEvento,
+getPersonaEvento,
+deletePersonaEvento,
 compararRut,
-getVisitasPorEvento
+getPersonasPorEvento
 }

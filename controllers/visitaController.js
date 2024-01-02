@@ -29,7 +29,7 @@ const getVisitas= async(req,res)=>{
 
 const createVisitas= async(req,res)=>{
 
-    const {rut,nombre,apellido,telefono,rol,fechaInicio,fechaTermino} = req.body;
+    const {rut,nombre,apellido,telefono} = req.body;
     try{
 
         if(!useRegexNombre(req.body.nombre)){
@@ -55,7 +55,7 @@ const createVisitas= async(req,res)=>{
 
         const visita = await prisma.Visita.create({
             data:{
-                rut,nombre,apellido,telefono,rol,fechaInicio,fechaTermino
+                rut,nombre,apellido,telefono
             }
         })
         return res.status(200).json({
@@ -82,7 +82,7 @@ const compararRut= async(req,res)=>{
     const {rut}=req.params
     
     try{
-        const visita = await prisma.visita.findMany({
+        const visita = await prisma.Visita.findMany({
             where : {rut: String(rut)}
     })   
      if(!useRegexRut(req.params.rut)){
@@ -161,7 +161,7 @@ const getVisita= async(req,res)=>{
 
 const updateVisita = async(req,res)=>{
     const {id}=req.params
-    const {rut,nombre,apellido,telefono,rol,fechaInicio,fechaTermino} = req.body
+    const {rut,nombre,apellido,telefono} = req.body
     try{
 
     const visita =await prisma.Visita.update({
@@ -172,9 +172,6 @@ const updateVisita = async(req,res)=>{
         nombre:nombre,
         apellido:apellido,
         telefono:telefono,
-        rol:rol,
-        fechaInicio:fechaInicio,
-        fechaTermino:fechaTermino
     }
     }) 
        if(!visita){

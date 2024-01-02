@@ -29,14 +29,14 @@ const getEventos= async(req,res)=>{
 
 const createEvento= async(req,res)=>{
 
-    const {tema,descripcion,fecha} = req.body;
+    const {tema,descripcion} = req.body;
     try{
 
         
 
         const evento = await prisma.Evento.create({
             data:{
-                tema,descripcion,fecha
+                tema,descripcion
             }
         })
         return res.status(200).json({
