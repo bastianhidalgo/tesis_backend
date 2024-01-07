@@ -121,7 +121,7 @@ const deleteApoderado= async(req,res)=>{
         }
 
         return res.status(200).json({
-            mensaje:"Se ha eliminado el alumno exitosamente",
+            mensaje:"Se ha eliminado el apoderado exitosamente",
             apoderado:apoderado
         })
     }catch(error)
