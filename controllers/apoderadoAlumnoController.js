@@ -28,41 +28,51 @@ const getApoderadosAlumnos= async(req,res)=>{
 
 }
 
-const createApoderadoAlumno= async(req,res)=>{
-    
-
-    const {apoderadoId,alumnoId} = req.body;
-
-
-    try{
-        
-
-        const ApoderadoAlumno = await prisma.ApoderadoAlumno.create({
-            data:{
-                apoderado:{
-                    connect: {
-                        id_apoderado: apoderadoId
-                    }
-                },      alumno: {
-                    connect: {
-                      id_alumno: alumnoId // Suponiendo que visitaId es el ID del objeto Visita relacionado
-                    }
-                  }
-            }
-        })
-        return res.status(200).json({
-            mensaje:"Se ha creado la relacion correctamente",
-            ApoderadoAlumno:ApoderadoAlumno
-
-        })
-
-    }catch(error){
-        console.log(error.stack);
+const createApoderadoAlumno = async (req, res) => {
+    const { apoderadoId, alumnoId } = req.body;
+  
+    try {
+      // Consultar si ya existe la relación
+      const existeRelacion = await prisma.ApoderadoAlumno.findFirst({
+        where: {
+          apoderadoId: apoderadoId,
+          alumnoId: alumnoId,
+        },
+      });
+  
+      if (existeRelacion) {
         return res.status(400).json({
-            mensaje:"Error al crear la relacion"
-        })
+          mensaje: "La relación ya existe",
+        });
+      }
+  
+      // Si no existe, crear la relación
+      const apoderadoAlumno = await prisma.ApoderadoAlumno.create({
+        data: {
+          apoderado: {
+            connect: {
+              id_apoderado: apoderadoId,
+            },
+          },
+          alumno: {
+            connect: {
+              id_alumno: alumnoId,
+            },
+          },
+        },
+      });
+  
+      return res.status(200).json({
+        mensaje: "Se ha creado la relación correctamente",
+        apoderadoAlumno: apoderadoAlumno,
+      });
+    } catch (error) {
+      console.log(error.stack);
+      return res.status(500).json({
+        mensaje: "Error al crear la relación",
+      });
     }
-}
+  };
 
 const getApoderadoAlumno= async(req,res)=>{
     const {id_apoderado,id_alumno} = req.params
@@ -93,6 +103,9 @@ const getApoderadoAlumno= async(req,res)=>{
         })
     }
 };
+
+
+
 const getAlumnosporApoderado= async(req,res)=>{
     
     try{
@@ -106,13 +119,23 @@ const getAlumnosporApoderado= async(req,res)=>{
               },
           });
 
+          if(ApoderadoAlumno.length==0){
+            return res.status(400).json({
+                mensaje:"No se pudo encontrar al apoderado"
+            })
+        }
           const idsAlumnosArray = ApoderadoAlumno.map((alumno) => alumno.alumnoId);
           res.status(200).json({ idsAlumnos: idsAlumnosArray });
+
         } catch (error) {
           console.error(error);
           res.status(500).json({ error: 'Error al obtener los IDs de alumnos por apoderado' });
         }
       };
+
+
+
+
       const getApoderadosporAlumno= async(req,res)=>{
     
         try{
@@ -127,7 +150,9 @@ const getAlumnosporApoderado= async(req,res)=>{
               });
     
               const idsApoderadosArray = ApoderadoAlumno.map((apoderado) => apoderado.apoderadoId);
+              
               res.status(200).json({ idsApoderados: idsApoderadosArray });
+
             } catch (error) {
               console.error(error);
               res.status(500).json({ error: 'Error al obtener los IDs de alumnos por apoderado' });
@@ -164,6 +189,33 @@ const deleteApoderadoAlumno= async(req,res)=>{
         })
     }
 };
+const deleteApoderado = async (req, res) => {
+  const { id_apoderado } = req.params;
+  try {
+      // Eliminar todos los registros asociados al apoderado
+      const deletedRecords = await prisma.ApoderadoAlumno.deleteMany({
+          where: {
+              apoderadoId: Number(id_apoderado),
+          },
+      });
+
+      if (!deletedRecords.count) {
+          return res.status(400).json({
+              mensaje: "No se encontraron registros asociados al apoderado",
+          });
+      }
+
+      return res.status(200).json({
+          mensaje: "Se han eliminado todos los registros asociados al apoderado exitosamente",
+          cantidadEliminada: deletedRecords.count,
+      });
+  } catch (error) {
+      console.log(error.stack);
+      return res.status(400).json({
+          mensaje: "No se pudo completar la eliminación de registros",
+      });
+  }
+};
 
 
 
@@ -174,5 +226,6 @@ createApoderadoAlumno,
 getApoderadoAlumno,
 deleteApoderadoAlumno,
 getAlumnosporApoderado,
-getApoderadosporAlumno
+getApoderadosporAlumno,
+deleteApoderado
 }
