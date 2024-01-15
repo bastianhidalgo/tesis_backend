@@ -48,7 +48,7 @@ const getAllPersonas=async(req,res)=>{
 
 
 const createPersona = async (req, res) => {
-    const { rol, apoderadoId, visitaId, fecha_inicio, fecha_termino } = req.body;
+    const { rol, apoderadoId, visitaId, fecha_inicio, fecha_termino,observacion } = req.body;
 
     try {
         const persona = await prisma.Persona.create({
@@ -58,7 +58,8 @@ const createPersona = async (req, res) => {
                 apoderadoId,
                 visitaId,
                 fecha_inicio,
-                fecha_termino
+                fecha_termino,
+                observacion
             }
         });
 
@@ -222,7 +223,7 @@ const getPersonaByIdApoderado= async(req,res)=>{
 
 const updatePersona = async(req,res)=>{
     const {id}=req.params
-    const {rol,fecha_inicio,fecha_termino} = req.body
+    const {rol,fecha_inicio,fecha_termino,observacion} = req.body
     try{
 
     const persona =await prisma.Persona.update({
@@ -231,7 +232,8 @@ const updatePersona = async(req,res)=>{
     data:{
         rol:rol,
         fecha_inicio:fecha_inicio,
-        fecha_termino:fecha_termino
+        fecha_termino:fecha_termino,
+        observacion:observacion
     }
     }) 
        if(!persona){

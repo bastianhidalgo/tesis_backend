@@ -112,34 +112,80 @@ const getEventosporCurso= async(req,res)=>{
         }
       };
 
-const deleteCursoEvento= async(req,res)=>{
-    const {id_curso,codigo_evento} = req.params
+      const getCursosporEvento= async(req,res)=>{
+    
+        try{
+            const {eventoId} = req.params
+            const CursoEvento = await prisma.CursoEvento.findMany({
+                where: {
+                    eventoId: parseInt(eventoId),
+                  },
+                  select: {
+                    cursoId: true,
+                  },
+              });
+    
+              const idsCursosArray = CursoEvento.map((curso) => curso.cursoId);
+              res.status(200).json({ idsCursos: idsCursosArray });
+            } catch (error) {
+              console.error(error);
+              res.status(500).json({ error: 'Error al obtener los IDs de los cursos' });
+            }
+          };
+          const deleteCursoEvento = async (req, res) => {
+            const { id_curso, codigo_evento } = req.params;
+          
+            try {
+              const CursoEvento = await prisma.CursoEvento.delete({
+                where: {
+                    eventoId_cursoId: {  // Cambiado de cursoId_eventoId a eventoId_cursoId
+                        cursoId: Number(id_curso),
+                    eventoId: Number(codigo_evento),
+                  },
+                },
+              });
+          
+              if (!CursoEvento) {
+                return res.status(404).json({
+                  mensaje: "No se encontró la relación entre el curso y el evento.",
+                });
+              }
+          
+              return res.status(200).json({
+                mensaje: "Se ha eliminado la relación exitosamente.",
+                CursoEvento: CursoEvento,
+              });
+            } catch (error) {
+              console.error(error);
+              return res.status(500).json({
+                mensaje: "Error interno del servidor al eliminar la relación.",
+              });
+            }
+          };
+const deleteEventos= async(req,res)=>{
+    const {codigo_evento} = req.params
     try{
 
-        const CursoEvento = await prisma.CursoEvento.delete({
+        const deletedCursoEventos  = await prisma.CursoEvento.deleteMany({
             where: {
-              cursoId_eventoId: {
-                cursoId: Number(id_curso),
                 eventoId: Number(codigo_evento),
-              },
             },
           });
-        if(!CursoEvento){
-            return res.status(400).json({
-                mensaje:"No se pudo encontrar a curso y evento"
-            })
+          if (deletedCursoEventos.count === 0) {
+            return res.status(404).json({
+                mensaje: "No se encontraron relaciones para el evento proporcionado",
+            });
         }
 
         return res.status(200).json({
-            mensaje:"Se ha eliminado el registro exitosamente",
-            CursoEvento:CursoEvento
-        })
-    }catch(error)
-    {
-        console.log(error.stack);
-        return res.status(400).json({
-            mensaje:"No se pudo encontrar el registro"
-        })
+            mensaje: "Se han eliminado todas las relaciones exitosamente",
+            deletedCursoEventos: deletedCursoEventos,
+        });
+    }catch (error) {
+        console.error(error.stack);
+        return res.status(500).json({
+            mensaje: "Error al intentar eliminar las relaciones del evento con los cursos",
+        });
     }
 };
 
@@ -151,5 +197,7 @@ getCursosEventos,
 createCursoEvento,
 getCursoEvento,
 deleteCursoEvento,
-getEventosporCurso
+getEventosporCurso,
+deleteEventos,
+getCursosporEvento
 }

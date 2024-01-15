@@ -196,6 +196,7 @@ const getIngresosByDateRange = async (req, res) => {
   };
 
 
+  
 
 module.exports={
 getIngresos,

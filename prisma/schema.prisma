@@ -20,6 +20,8 @@ model Persona {
   rolObj        Rol             @relation(fields: [rol], references: [codigo_rol])
   visita        Visita?         @relation(fields: [visitaId], references: [id_visita])
   eventos       PersonaEvento[]
+  observacion   String?         // Nuevo campo de observación opcional
+
 
   @@index([rol], map: "Persona_rol_fkey")
   @@index([apoderadoId], map: "Persona_apoderadoId_fkey")
