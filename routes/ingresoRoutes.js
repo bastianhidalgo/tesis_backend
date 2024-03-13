@@ -12,7 +12,9 @@ api.get('/ingresos/getallbydate/:fechaInicio/:fechaTermino?',ingresoController.g
 
 
 api.post('/ingresos/create',ingresoController.createIngreso);
-api.delete('/ingresos/delete/:id',ingresoController.deleteIngreso);
+
+api.delete('/ingresos/delete',ingresoController.deleteIngreso);
+api.put('/ingresos/update',ingresoController.updateIngreso);
 
 
 module.exports=api;

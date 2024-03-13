@@ -34,6 +34,8 @@ model Apoderado {
   nombre       String
   apellido     String
   telefono     String            @db.VarChar(15)
+  fecha_inicio  DateTime?       @db.Date
+  fecha_termino DateTime?       @db.Date
   alumnos      ApoderadoAlumno[]
   personas     Persona[]
 }
@@ -44,6 +46,8 @@ model Visita {
   nombre    String
   apellido  String
   telefono  String    @db.VarChar(15)
+  fecha_inicio  DateTime?       @db.Date
+  fecha_termino DateTime?       @db.Date
   personas  Persona[]
 }
 
@@ -84,7 +88,8 @@ model ApoderadoAlumno {
   alumnoId    Int
   alumno      Alumno    @relation(fields: [alumnoId], references: [id_alumno])
   apoderado   Apoderado @relation(fields: [apoderadoId], references: [id_apoderado])
-
+  fecha_inicio  DateTime?       @db.Date
+  fecha_termino DateTime?       @db.Date
   @@unique([apoderadoId, alumnoId], map: "apoderadoId")
   @@index([alumnoId], map: "ApoderadoAlumno_alumnoId_fkey")
 }
@@ -103,6 +108,7 @@ model Ingreso {
   fechaIngreso  DateTime
   personaId     Int
   persona       Persona  @relation(fields: [personaId], references: [id_persona])
+  motivo      String?
 
   @@id([fechaIngreso, personaId])
   @@index([personaId], map: "Ingreso_personaId_fkey")

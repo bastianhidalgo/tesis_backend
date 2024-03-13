@@ -165,6 +165,7 @@ const getAlumnosPorCurso = async (req, res) => {
       if (!alumnos.length) {
         return res.status(202).json({
           mensaje: "No se encontraron alumnos para este curso",
+          alumnos: alumnos,
         });
       }
   
@@ -214,7 +215,7 @@ const updateCursoAlumno = async(req,res)=>{
 
 const updateAlumno = async(req,res)=>{
     const {id}=req.params
-    const {rut,nombre,apellido} = req.body
+    const {rut,nombre,apellido,cursoId} = req.body
     try{
 
     const alumno =await prisma.Alumno.update({
@@ -223,7 +224,8 @@ const updateAlumno = async(req,res)=>{
     data:{
         rut:rut,
         nombre:nombre,
-        apellido:apellido
+        apellido:apellido,
+        cursoId:cursoId
         
     }
     }) 

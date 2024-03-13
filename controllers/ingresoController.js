@@ -29,12 +29,12 @@ const getIngresos= async(req,res)=>{
 
 const createIngreso= async(req,res)=>{
     
-    const {fechaIngreso,personaId} = req.body;
+    const {fechaIngreso,personaId,motivo} = req.body;
     try{
 
         const ingreso = await prisma.Ingreso.create({
             data:{
-                fechaIngreso, personaId // Suponiendo que visitaId es el ID del objeto Visita relacionado
+                fechaIngreso, personaId,motivo // Suponiendo que visitaId es el ID del objeto Visita relacionado
                     
                   
             }
@@ -83,31 +83,7 @@ const compararRut= async(req,res)=>{
     })
 }
 }
-const deleteIngreso = async (req, res) => {
-    const { fechaIngreso } = req.params;
 
-    try {
-        const ingreso = await prisma.Ingreso.delete({
-            where: { fechaIngreso: new Date(fechaIngreso) }
-        });
-
-        if (!ingreso) {
-            return res.status(400).json({
-                mensaje: "No se pudo encontrar el ingreso"
-            });
-        }
-
-        return res.status(200).json({
-            mensaje: "Se ha eliminado el ingreso exitosamente",
-            ingreso: ingreso
-        });
-    } catch (error) {
-        console.log(error.stack);
-        return res.status(400).json({
-            mensaje: "No se pudo encontrar el ingreso"
-        });
-    }
-};
 const getIngreso = async (req, res) => {
     const { fechaIngreso } = req.params;
     try {
@@ -196,7 +172,69 @@ const getIngresosByDateRange = async (req, res) => {
   };
 
 
-  
+  const updateIngreso = async (req, res) => {
+    const { fechaIngreso,nuevaFechaIngreso,personaId,motivo } = req.body;
+
+    try {
+        // Buscar el ingreso que se desea actualizar
+        let ingreso = await prisma.Ingreso.update({
+            where: { 
+                fechaIngreso_personaId: { // Utiliza la clave compuesta
+                    fechaIngreso: new Date(fechaIngreso), // Fecha de ingreso
+                    personaId: parseInt(personaId)
+                },
+                
+            },
+            data: {
+                fechaIngreso: nuevaFechaIngreso ? new Date(nuevaFechaIngreso) : undefined, // Nueva fecha de ingreso
+                motivo: motivo ? motivo : undefined,
+
+            }
+        });
+
+        return res.status(200).json({
+            mensaje: "Ingreso actualizado correctamente",
+            ingreso: ingreso
+        });
+    } catch (error) {
+        console.error('Error al actualizar el ingreso:', error);
+        return res.status(500).json({ mensaje: "Error interno del servidor" });
+    }
+};
+
+const deleteIngreso = async (req, res) => {
+    const { fechaIngreso,personaId } = req.body;
+
+    try {
+        const ingreso = await prisma.Ingreso.delete({
+            where: { 
+                fechaIngreso_personaId: { 
+                    fechaIngreso: new Date(fechaIngreso),
+                    personaId:parseInt(personaId)
+                }
+            }
+        });
+
+        if (!ingreso || ingreso.count === 0) {
+            return res.status(400).json({
+                mensaje: "No se pudo encontrar el ingreso o ya ha sido eliminado"
+            });
+        }
+
+        return res.status(200).json({
+            mensaje: "Se ha eliminado el ingreso exitosamente",
+            ingreso: ingreso
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            mensaje: "Error al eliminar el ingreso"
+        });
+    }
+};
+
+
+
 
 module.exports={
 getIngresos,
@@ -205,5 +243,6 @@ deleteIngreso,
 getIngreso,
 compararRut,
 getIngresosPorPersona,
-getIngresosByDateRange
+getIngresosByDateRange,
+updateIngreso
 }

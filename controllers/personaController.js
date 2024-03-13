@@ -255,6 +255,33 @@ const updatePersona = async(req,res)=>{
         })
     }
 }
+const getPersonasByRol= async(req,res)=>{
+    const {codigo} = req.params
+    try{
+
+        const personas = await prisma.Persona.findMany({
+            where : {
+                rol: Number(codigo)}
+        })
+        if (!personas.length) {
+            return res.status(202).json({
+              mensaje: "No se encontraron personas que contengan este rol",
+              personas: personas,
+            });
+          }
+        
+        return res.status(200).json({
+            mensaje:"personas encontradas",
+            personas:personas
+        })
+    }catch(error)
+    {
+        console.log(error.stack);
+        return res.status(400).json({
+            mensaje:"Error al encontrar personas por rol"
+        })
+    }
+};
 
 const obtenerInfoAdicionalPersonas = async (req, res) => {
     try {
@@ -290,8 +317,8 @@ updatePersona,
 compararRut,
 getPersonaByIdApoderado,
 getPersonaByIdVisita,
-obtenerInfoAdicionalPersonas
-
+obtenerInfoAdicionalPersonas,
+getPersonasByRol
 
 
 }
